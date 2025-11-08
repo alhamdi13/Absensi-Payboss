@@ -514,129 +514,127 @@
 
         // Work hours tracking
         let workHours = [];
-
-        // GANTI FUNGSI LAMA DENGAN FUNGSI BARU INI
+// GANTI FUNGSI LAMA DENGAN FUNGSI BARU INI
 function generateWeeklyRoster() {
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay()); // Start from Sunday
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay()); // Start from Sunday
 
-    const rosterData = [];
-    
-    // *** INI ADALAH PERUBAHAN UTAMA ***
-    // Kita sekarang menggunakan 'employees' (dari Google Sheet) 
-    // bukan 'REFERENCE_EMPLOYEES' (data hard-coded)
-    const activeEmployees = employees.filter(emp => emp.status === 'aktif');
+    const rosterData = [];
+    
+    // *** INI ADALAH PERUBAHAN UTAMA ***
+    // Kita sekarang menggunakan 'employees' (dari Google Sheet) 
+    // bukan 'REFERENCE_EMPLOYEES' (data hard-coded)
+    const activeEmployees = employees.filter(emp => emp.status === 'aktif');
 
-    if (activeEmployees.length === 0) {
-        showToast('Tidak ada data karyawan aktif untuk membuat roster.', 'error');
-        return [];
-    }
+    if (activeEmployees.length === 0) {
+        showToast('Tidak ada data karyawan aktif untuk membuat roster.', 'error');
+        return [];
+    }
 
-    // Generate roster for current week
-    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-        const currentDate = new Date(startOfWeek);
-        currentDate.setDate(startOfWeek.getDate() + dayOffset);
-        const dateStr = currentDate.toISOString().split('T')[0];
+    // Generate roster for current week
+    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+        const currentDate = new Date(startOfWeek);
+        currentDate.setDate(startOfWeek.getDate() + dayOffset);
+        const dateStr = currentDate.toISOString().split('T')[0];
 
-        // Loop menggunakan karyawan dari Google Sheet
-        activeEmployees.forEach((emp, index) => {
-            let shiftRoster;
-            
-            // Logika roster dengan coverage 24/7 untuk bisnis F&B PayBoss
-            if (emp.posisi === 'Koordinator' || emp.posisi === 'Supervisor') {
-                // Koordinator & Supervisor: Tetap Senin-Jumat, weekend off
-                if (dayOffset === 0 || dayOffset === 6) { // Sunday & Saturday
-                    shiftRoster = 'OFF';
-                } else {
-                    shiftRoster = emp.shift_tetap;
-                }
-            } else {
-                // Kasir, Barista, Waitress, Koki: Rotasi untuk coverage 24/7 termasuk weekend
-                const weekNumber = Math.floor(today.getTime() / (7 * 24 * 60 * 60 * 1000));
-                const employeeRotation = (weekNumber + index) % 4; // 4 pola rotasi
-                
-                const rotationPatterns = [
-                    [0, 1, 1, 1, 1, 1, 0], // OFF, Senin-Jumat, OFF
-                    [0, 0, 1, 1, 1, 1, 1], // OFF, OFF, Selasa-Sabtu
-                    [1, 0, 0, 1, 1, 1, 1], // Minggu, OFF, OFF, Rabu-Sabtu
-                    [1, 1, 1, 1, 1, 0, 0]  // Minggu-Kamis, OFF, OFF
-                ];
-                
-                const pattern = rotationPatterns[employeeRotation];
-                
-                if (pattern[dayOffset] === 0) {
-                    shiftRoster = 'OFF';
-                } else {
-                    // Rotasi shift untuk hari kerja dengan prioritas weekend coverage
-                    if (dayOffset === 0 || dayOffset === 6) { // Weekend
-                        if (emp.posisi === 'Kasir') {
-                            const cashierShifts = ['1', '2', '1'];
-                            const shiftIndex = (weekNumber + index) % 3;
-                            shiftRoster = cashierShifts[shiftIndex];
-                        } else if (emp.posisi === 'Koki') {
-                            const cookShifts = ['1', '2', '3'];
-                            const shiftIndex = (weekNumber + index) % 3;
-                            shiftRoster = cookShifts[shiftIndex];
-                        } else if (emp.posisi === 'Barista') {
-                            const baristaShifts = ['1', '2', '1'];
-                            const shiftIndex = (weekNumber + index) % 3;
-                            shiftRoster = baristaShifts[shiftIndex];
-                        } else { // Waitress
-                            const waitressShifts = ['1', '2', '3'];
-                            const shiftIndex = (weekNumber + index) % 3;
-                            shiftRoster = waitressShifts[shiftIndex];
-                        }
-                    } else {
-                        // Untuk weekday
-                        if (emp.posisi === 'Kasir') {
-                            const cashierWeekdayShifts = ['1', '2'];
-                            const shiftIndex = (weekNumber + index + dayOffset) % 2;
-                            shiftRoster = cashierWeekdayShifts[shiftIndex];
-                        } else {
-                            const weekdayShiftRotation = (weekNumber + index + dayOffset) % 3;
-                            const shifts = ['1', '2', '3'];
-                            shiftRoster = shifts[weekdayShiftRotation];
-                        }
-                    }
-                }
-            }
+        // Loop menggunakan karyawan dari Google Sheet
+        activeEmployees.forEach((emp, index) => {
+            let shiftRoster;
+            
+            // Logika roster dengan coverage 24/7 untuk bisnis F&B PayBoss
+            if (emp.posisi === 'Koordinator' || emp.posisi === 'Supervisor') {
+                // Koordinator & Supervisor: Tetap Senin-Jumat, weekend off
+                if (dayOffset === 0 || dayOffset === 6) { // Sunday & Saturday
+                    shiftRoster = 'OFF';
+                } else {
+                    shiftRoster = emp.shift_tetap;
+                }
+            } else {
+                // Kasir, Barista, Waitress, Koki: Rotasi untuk coverage 24/7 termasuk weekend
+                const weekNumber = Math.floor(today.getTime() / (7 * 24 * 60 * 60 * 1000));
+                const employeeRotation = (weekNumber + index) % 4; // 4 pola rotasi
+                
+                const rotationPatterns = [
+                    [0, 1, 1, 1, 1, 1, 0], // OFF, Senin-Jumat, OFF
+                    [0, 0, 1, 1, 1, 1, 1], // OFF, OFF, Selasa-Sabtu
+                    [1, 0, 0, 1, 1, 1, 1], // Minggu, OFF, OFF, Rabu-Sabtu
+                    [1, 1, 1, 1, 1, 0, 0]  // Minggu-Kamis, OFF, OFF
+                ];
+                
+                const pattern = rotationPatterns[employeeRotation];
+                
+                if (pattern[dayOffset] === 0) {
+                    shiftRoster = 'OFF';
+                } else {
+                    // Rotasi shift untuk hari kerja dengan prioritas weekend coverage
+                    if (dayOffset === 0 || dayOffset === 6) { // Weekend
+                        if (emp.posisi === 'Kasir') {
+                            const cashierShifts = ['1', '2', '1'];
+                            const shiftIndex = (weekNumber + index) % 3;
+                            shiftRoster = cashierShifts[shiftIndex];
+                        } else if (emp.posisi === 'Koki') {
+                            const cookShifts = ['1', '2', '3'];
+                            const shiftIndex = (weekNumber + index) % 3;
+                            shiftRoster = cookShifts[shiftIndex];
+                        } else if (emp.posisi === 'Barista') {
+                            const baristaShifts = ['1', '2', '1'];
+                            const shiftIndex = (weekNumber + index) % 3;
+                            shiftRoster = baristaShifts[shiftIndex];
+                        } else { // Waitress
+                            const waitressShifts = ['1', '2', '3'];
+                            const shiftIndex = (weekNumber + index) % 3;
+                            shiftRoster = waitressShifts[shiftIndex];
+                        }
+                    } else {
+                        // Untuk weekday
+                        if (emp.posisi === 'Kasir') {
+                            const cashierWeekdayShifts = ['1', '2'];
+                            const shiftIndex = (weekNumber + index + dayOffset) % 2;
+                            shiftRoster = cashierWeekdayShifts[shiftIndex];
+                        } else {
+                            const weekdayShiftRotation = (weekNumber + index + dayOffset) % 3;
+                            const shifts = ['1', '2', '3'];
+                            shiftRoster = shifts[weekdayShiftRotation];
+                        }
+                m    }
+                }
+            }
 
-            // Check for existing leave requests
-            const existingLeave = allRecords.find(r => 
-                r.type === 'leave_request' && 
-                r.nik === emp.nik && 
-                r.tanggal === dateStr && 
-                r.status === 'approved'
-            );
+            // Check for existing leave requests
+            const existingLeave = allRecords.find(r => 
+                r.type === 'leave_request' && 
+                r.nik === emp.nik && 
+  m            r.tanggal === dateStr && 
+                r.status === 'approved'
+            );
 
-            if (existingLeave) {
-                shiftRoster = existingLeave.leave_type === 'cuti' ? 'CUTI' : 'IJIN';
-            }
+            if (existingLeave) {
+                shiftRoster = existingLeave.leave_type === 'cuti' ? 'CUTI' : 'IJIN';
+            }
 
-            const rosterEntry = {
-                nik: emp.nik,
-                nama: emp.nama,
-                posisi: emp.posisi,
-                tanggal: dateStr,
-                shift_roster: shiftRoster,
-                jam_kerja_normal: 8, // Ini akan cocok dengan header 'jam_kerja_normal'
-                keterangan: shiftRoster === 'OFF' ? 'Libur (2 dari 7 hari)' : 
-                            shiftRoster === 'CUTI' ? 'Cuti Tahunan' : 
-                            shiftRoster === 'IJIN' ? 'Ijin Khusus' :
-                            `${emp.posisi} ${getShiftLabel(shiftRoster)} - 8 jam kerja${(dayOffset === 0 || dayOffset === 6) ? ' (Weekend F&B)' : ''}`,
-                type: 'roster'
-            };
+            const rosterEntry = {
+                nik: emp.nik,
+                nama: emp.nama,
+                posisi: emp.posisi,
+                tanggal: dateStr,
+                shift_roster: shiftRoster,
+                jam_kerja_normal: 8, // Ini akan cocok dengan header 'jam_kerja_normal'
+                keterangan: shiftRoster === 'OFF' ? 'Libur (2 dari 7 hari)' : 
+                            shiftRoster === 'CUTI' ? 'Cuti Tahunan' : 
+                            shiftRoster === 'IJIN' ? 'Ijin Khusus' :
+                            `${emp.posisi} ${getShiftLabel(shiftRoster)} - 8 jam kerja${(dayOffset === 0 || dayOffset === 6) ? ' (Weekend F&B)' : ''}`,
+                type: 'roster'
+            };
 
-            rosterData.push(rosterEntry);
-        });
-    }
+            rosterData.push(rosterEntry);
+        });
+    }
 
-    return rosterData;
+    return rosterData;
 }
-        }
 
-        async function generateAndSaveRoster() {
+        async function generateAndSaveRoster() {
             const btn = document.getElementById('generateRosterBtn');
             if (!btn) return;
 
