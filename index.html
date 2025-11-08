@@ -592,7 +592,7 @@ function generateWeeklyRoster() {
                             const cashierWeekdayShifts = ['1', '2'];
                             const shiftIndex = (weekNumber + index + dayOffset) % 2;
                             shiftRoster = cashierWeekdayShifts[shiftIndex];
-                        } else {
+                    } else {
                             const weekdayShiftRotation = (weekNumber + index + dayOffset) % 3;
                             const shifts = ['1', '2', '3'];
                             shiftRoster = shifts[weekdayShiftRotation];
@@ -605,7 +605,7 @@ function generateWeeklyRoster() {
             const existingLeave = allRecords.find(r => 
                 r.type === 'leave_request' && 
                 r.nik === emp.nik && 
-              r.tanggal === dateStr && 
+                r.tanggal === dateStr && 
                 r.status === 'approved'
             );
 
@@ -632,7 +632,7 @@ function generateWeeklyRoster() {
     }
 
     return rosterData;
- 
+} 
         async function generateAndSaveRoster() {
             const btn = document.getElementById('generateRosterBtn');
             if (!btn) return;
