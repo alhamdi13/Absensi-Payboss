@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PayBoss - Sistem Absensi</title>
-  <script src="/_sdk/data_sdk.js"></script>
   <script src="/_sdk/element_sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -283,6 +282,80 @@
  </head>
  <body class="min-h-full">
   <div id="app" class="min-h-full"></div>
+  <script>
+  // GANTI DENGAN URL WEB APP ANDA
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzzAMcyxm1qjtXdjgKROgS0QqA2S4L7TbZBKabKB8r2fJUIwzLPrU76dcxJH9MHkMoiag/exec";
+
+  const googleSheetSdk = {
+    async init(dataHandler) {
+      try {
+        const response = await fetch(GAS_URL);
+        const result = await response.json();
+
+        if (result.isOk) {
+          // Panggil data handler asli dari aplikasi Anda
+          dataHandler.onDataChanged(result.data);
+          return { isOk: true, data: result.data };
+        } else {
+          console.error("Gagal mengambil data dari Google Sheet:", result.error);
+          return { isOk: false, error: result.error };
+        }
+      } catch (error) {
+        console.error("Error saat init:", error);
+        return { isOk: false, error: error.message };
+      }
+    },
+
+    async create(payload) {
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        return await response.json();
+      } catch (error) {
+        console.error("Error saat create:", error);
+        return { isOk: false, error: error.message };
+      }
+    },
+
+    async update(payload) {
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          // Payload untuk update SUDAH berisi __backendId
+          body: JSON.stringify(payload) 
+        });
+        return await response.json();
+      } catch (error) {
+        console.error("Error saat update:", error);
+        return { isOk: false, error: error.message };
+      }
+    },
+
+    async delete(payload) {
+      try {
+        // Tambahkan properti __operation untuk ditangkap oleh doPost
+        const deletePayload = { ...payload, __operation: 'delete' };
+
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(deletePayload)
+        });
+        return await response.json();
+      } catch (error) {
+        console.error("Error saat delete:", error);
+        return { isOk: false, error: error.message };
+      }
+    }
+  };
+
+  // Ganti SDK palsu dengan SDK Google Sheet yang baru
+  window.dataSdk = googleSheetSdk;
+</script>
   <script>
         const defaultConfig = {
             background_color: "#f0f4f8",
